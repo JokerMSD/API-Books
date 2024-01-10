@@ -1,5 +1,6 @@
-import { Router, Request, Response, NextFunction } from "express";
-import { BookController } from "../app";
+import { BookController } from "../services/services";
+import { Router } from "express";
+import { Request, Response, NextFunction, RequestHandler } from "express";
 import {
   CheckBookExistence,
   CheckDuplicateBookName,
@@ -20,7 +21,7 @@ router.get(
 router.post(
   "/books",
   (req: Request, res: Response, next: NextFunction) => {
-    CheckDuplicateBookName.getInstance().execute(req, res, next);
+    new CheckDuplicateBookName().execute(req, res, next);
   },
   BookController.createBook,
 );
