@@ -1,12 +1,9 @@
 import express, { json, Request, Response, NextFunction } from "express";
-import {
-  CheckBookExistence,
-  ErrorHandler,
-  CheckDuplicateBookName,
-} from "./middleware";
+import routes from "./Routes/routes";
+import { errorHandler } from "./middlewares/middleware";
 import { booksDatabase } from "./database/database";
 
-class Book {
+export class Book {
   id: number;
   name: string;
   pages: number;
@@ -24,7 +21,7 @@ class Book {
   }
 }
 
-class BookController {
+export class BookController {
   static idCounter: number = 1;
 
   static getAllBooks(req: Request, res: Response): Response {
@@ -90,40 +87,8 @@ export const app = express();
 
 app.use(json());
 
-// Routes
-app.get("/books", BookController.getAllBooks);
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  errorHandler.execute(err, req, res, next);
+});
 
-app.get(
-  "/books/:id",
-  (req: Request, res: Response, next: NextFunction) => {
-    CheckBookExistence.getInstance().execute(req, res, next);
-  },
-  BookController.getBookById,
-);
-
-app.post(
-  "/books",
-  (req: Request, res: Response, next: NextFunction) => {
-    CheckDuplicateBookName.getInstance().execute(req, res, next);
-  },
-  BookController.createBook,
-);
-
-app.patch(
-  "/books/:id",
-  (req: Request, res: Response, next: NextFunction) => {
-    new CheckDuplicateBookName().execute(req, res, next);
-  },
-  (req: Request, res: Response, next: NextFunction) => {
-    new CheckBookExistence().execute(req, res, next);
-  },
-  BookController.updateBook,
-);
-
-app.delete(
-  "/books/:id",
-  (req: Request, res: Response, next: NextFunction) => {
-    new CheckBookExistence().execute(req, res, next);
-  },
-  BookController.deleteBook,
-);
+app.use(routes);
