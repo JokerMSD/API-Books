@@ -1,42 +1,66 @@
 import { Request, Response, NextFunction } from "express";
 import { booksDatabase } from "./database/database";
+import { ServiceInterface } from "./interfaces";
 
-export const errorHandler = (
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Response<any, Record<string, any>> => {
-  console.error(err.stack);
-  return res.status(500).json({ error: "Internal Server Error" });
-};
+export class Service implements ServiceInterface {
+  execute(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): void | Response<any, Record<string, any>> {
+    throw new Error("Method not implemented.");
+  }
+}
 
-export const checkDuplicateBookName = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): void | Response<any, Record<string, any>> => {
-  const bookName = req.body.name;
-  const existingBook = booksDatabase.find((book) => book.name === bookName);
+export class ErrorHandler extends Service {
+  execute(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): void | Response<any, Record<string, any>> {
+    console.error(req, res, next);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+}
 
-  if (existingBook) {
-    return res.status(409).json({ error: "Book already registered." });
+export class CheckDuplicateBookName extends Service {
+  execute(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): void | Response<any, Record<string, any>> {
+    const bookName = req.body.name;
+    const existingBook = booksDatabase.find((book) => book.name === bookName);
+
+    if (existingBook) {
+      return res.status(409).json({ error: "Book already registered." });
+    }
+
+    next();
   }
 
-  next();
-};
+  static getInstance(): CheckDuplicateBookName {
+    return new CheckDuplicateBookName();
+  }
+}
 
-export const checkBookExistence = (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Response<any, Record<string, any>> | void => {
-  const id = Number(req.params.id);
-  const bookExists = booksDatabase.some((book) => book.id === id);
+export class CheckBookExistence extends Service {
+  execute(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): void | Response<any, Record<string, any>> {
+    const id = Number(req.params.id);
+    const bookExists = booksDatabase.some((book) => book.id === id);
 
-  if (!bookExists) {
-    return res.status(404).json({ error: "Book not found." });
+    if (!bookExists) {
+      return res.status(404).json({ error: "Book not found." });
+    }
+
+    next();
   }
 
-  next();
-};
+  static getInstance(): CheckBookExistence {
+    return new CheckBookExistence();
+  }
+}
