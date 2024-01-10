@@ -1,3 +1,3 @@
-import { MyObject } from "../interfaces";
+import { MyObject } from "../interfaces/interfaces";
 
 export const booksDatabase: MyObject[] = [];
