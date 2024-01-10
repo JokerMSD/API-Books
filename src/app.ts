@@ -1,10 +1,10 @@
 import express, { json, Request, Response, NextFunction } from "express";
-import { booksDatabase } from "./database/database";
 import {
-  checkDuplicateBookName,
-  errorHandler,
-  checkBookExistence,
+  CheckBookExistence,
+  ErrorHandler,
+  CheckDuplicateBookName,
 } from "./middleware";
+import { booksDatabase } from "./database/database";
 
 class Book {
   id: number;
@@ -47,7 +47,7 @@ class BookController {
       BookController.idCounter++,
       req.body.name,
       req.body.pages,
-      req.body.category
+      req.body.category,
     );
 
     booksDatabase.push(newBook);
@@ -58,17 +58,17 @@ class BookController {
   static updateBook(req: Request, res: Response): Response {
     const id = Number(req.params.id);
     const book = booksDatabase.find((book) => book.id === id);
-  
+
     if (!book) {
       return res.status(404).json({ error: "Book not found." });
     }
-  
+
     if (req.body.pages !== undefined) {
       book.pages = req.body.pages;
     }
-  
+
     book.updatedAt = new Date();
-  
+
     return res.status(200).json(book);
   }
 
@@ -90,13 +90,40 @@ export const app = express();
 
 app.use(json());
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  errorHandler(err, req, res, next);
-});
-
 // Routes
 app.get("/books", BookController.getAllBooks);
-app.get("/books/:id", checkBookExistence, BookController.getBookById);
-app.post("/books", checkDuplicateBookName, BookController.createBook);
-app.patch("/books/:id", checkDuplicateBookName, checkBookExistence, BookController.updateBook);
-app.delete("/books/:id", checkBookExistence, BookController.deleteBook);
+
+app.get(
+  "/books/:id",
+  (req: Request, res: Response, next: NextFunction) => {
+    CheckBookExistence.getInstance().execute(req, res, next);
+  },
+  BookController.getBookById,
+);
+
+app.post(
+  "/books",
+  (req: Request, res: Response, next: NextFunction) => {
+    CheckDuplicateBookName.getInstance().execute(req, res, next);
+  },
+  BookController.createBook,
+);
+
+app.patch(
+  "/books/:id",
+  (req: Request, res: Response, next: NextFunction) => {
+    new CheckDuplicateBookName().execute(req, res, next);
+  },
+  (req: Request, res: Response, next: NextFunction) => {
+    new CheckBookExistence().execute(req, res, next);
+  },
+  BookController.updateBook,
+);
+
+app.delete(
+  "/books/:id",
+  (req: Request, res: Response, next: NextFunction) => {
+    new CheckBookExistence().execute(req, res, next);
+  },
+  BookController.deleteBook,
+);
