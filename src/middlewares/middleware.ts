@@ -61,7 +61,7 @@ export class CheckBookExistence extends Service {
       return res.status(404).json({ error: "Book not found." });
     }
 
-     next();
+    return next();
   }
 
   static getInstance(): CheckBookExistence {
