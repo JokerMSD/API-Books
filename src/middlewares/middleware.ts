@@ -40,7 +40,7 @@ export class CheckDuplicateBookName extends Service {
       return res.status(409).json({ error: "Book already registered." });
     }
 
-    next();
+    return next();
   }
 
   static getInstance(): CheckDuplicateBookName {
@@ -61,7 +61,7 @@ export class CheckBookExistence extends Service {
       return res.status(404).json({ error: "Book not found." });
     }
 
-    next();
+     next();
   }
 
   static getInstance(): CheckBookExistence {
