@@ -1,6 +1,5 @@
 import { BookController } from "../services/services";
 import { Router } from "express";
-import { Request, Response, NextFunction, RequestHandler } from "express";
 import {
   CheckBookExistence,
   CheckDuplicateBookName,
@@ -8,41 +7,20 @@ import {
 
 const router = Router();
 
-router.get("/books", BookController.getAllBooks);
+router.use("/books", CheckDuplicateBookName.getInstance().execute)
 
-router.get(
-  "/books/:id",
-  (req: Request, res: Response, next: NextFunction) => {
-    CheckBookExistence.getInstance().execute(req, res, next);
-  },
-  BookController.getBookById,
-);
+router.use("/books/:id", CheckBookExistence.getInstance().execute)
 
-router.post(
-  "/books",
-  (req: Request, res: Response, next: NextFunction) => {
-    new CheckDuplicateBookName().execute(req, res, next);
-  },
-  BookController.createBook,
-);
 
-router.patch(
-  "/books/:id",
-  (req: Request, res: Response, next: NextFunction) => {
-    new CheckDuplicateBookName().execute(req, res, next);
-  },
-  (req: Request, res: Response, next: NextFunction) => {
-    new CheckBookExistence().execute(req, res, next);
-  },
-  BookController.updateBook,
-);
 
-router.delete(
-  "/books/:id",
-  (req: Request, res: Response, next: NextFunction) => {
-    new CheckBookExistence().execute(req, res, next);
-  },
-  BookController.deleteBook,
-);
+router.get("/", BookController.getAllBooks);
+
+router.get("/books/:id", BookController.getBookById);
+
+router.post("/books", BookController.createBook,);
+
+router.patch("/books/:id", BookController.updateBook,);
+
+router.delete("/books/:id", BookController.deleteBook,);
 
 export default router;
