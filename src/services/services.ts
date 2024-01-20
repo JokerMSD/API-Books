@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import { booksDatabase } from "../database/database";
+import { Book } from "../interfaces/interfaces";
 
-export class Book {
+export class BookClass implements Book {
   id: number;
   name: string;
   pages: number;
-  category: string;
+  category: string | undefined;
   createdAt: Date;
   updatedAt: Date;
 
@@ -22,8 +23,18 @@ export class Book {
 export class BookController {
   static idCounter: number = 1;
 
-  static getAllBooks(req: Request, res: Response): Response {
-    return res.status(200).json(booksDatabase);
+  static getBooks(req: Request, res: Response): Response {
+    let matchingBooks = booksDatabase;
+
+    if (typeof req.query.search === "string") {   
+        const searchedBook: string = req.query.search.toLowerCase();
+        
+        matchingBooks = booksDatabase.filter((book) => {
+          return book.name.toLowerCase().includes(searchedBook);
+        })
+    }
+
+    return res.status(200).json(matchingBooks);
   }
 
   static getBookById(req: Request, res: Response): Response {
@@ -38,7 +49,7 @@ export class BookController {
   }
 
   static createBook(req: Request, res: Response): Response {
-    const newBook = new Book(
+    const newBook = new BookClass(
       BookController.idCounter++,
       req.body.name,
       req.body.pages,
