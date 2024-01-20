@@ -1,13 +1,15 @@
-import express, { json, Request, Response, NextFunction } from "express";
+import "express-async-errors";
+import express, { json} from "express";
 import routes from "./Routes/routes";
-import { errorHandler } from "./middlewares/middleware";
+import { GlobalErrors } from "./middlewares/middleware";
+import helmet from "helmet";
+
 
 export const app = express();
-
+app.use(helmet())
 app.use(json());
-
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  errorHandler.execute(err, req, res, next);
-});
+const globalErrors = new GlobalErrors();
 
 app.use(routes);
+
+app.use(globalErrors.handleErrors);
