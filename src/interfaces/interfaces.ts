@@ -1,34 +1,33 @@
+import { AnyZodObject, z } from "zod";
 import { Request, Response, NextFunction } from "express";
+import {
+  bookArraySchema,
+  bookCreateSchema,
+  bookSchema,
+  bookUpdateSchema,
+} from "../schemas/books.schemas";
 
-export class MyObject {
-  id: number;
-  name: string;
-  pages: number;
-  category: string;
-  createdAt: Date;
-  updatedAt: Date;
+type Book = z.infer<typeof bookSchema>;
 
-  constructor(
-    id: number,
-    name: string,
-    pages: number,
-    category: string,
-    createdAt: Date,
-    updatedAt: Date,
-  ) {
-    this.id = id;
-    this.name = name;
-    this.pages = pages;
-    this.category = category;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
-  }
+type CreateBook = z.infer<typeof bookCreateSchema>;
+
+type UpdateBook = z.infer<typeof bookUpdateSchema>;
+
+type BookArray = z.infer<typeof bookArraySchema>
+
+interface RequestSchema {
+  params?: AnyZodObject;
+  body?: AnyZodObject;
+  query?: AnyZodObject;
 }
+
 
 export interface ServiceInterface {
   execute(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): void | Response<any, Record<string, any>>;
-}
+    req: Request | undefined,
+    res: Response | undefined,
+    next: NextFunction | undefined,
+    ): void | Response<any, Record<string, any>>;
+  }
+  
+  export { Book, CreateBook, UpdateBook, BookArray, RequestSchema };
